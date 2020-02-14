@@ -105,10 +105,14 @@ exports.createImageBulk = (req, res, next) => {
 exports.getImage = (req, res, next) => {
     const imageId = req.params.imageId;
 
-    Image.findOne({ where: {id: imageId, [Op.or]: [
+    Image.findOne({
+        where: {
+            id: imageId, [Op.or]: [
                 {isPrivate: 0},
                 {isPrivate: 1, userId: req.user.id}
-            ]}})
+            ]
+        }
+    })
         .then(image => {
             if (!image) {
                 const error = new Error('Could not find image.');
@@ -131,9 +135,17 @@ exports.getImage = (req, res, next) => {
         .catch(err => errorFunction(err, next));
 };
 
+/**
+ * Deletes a single image provided it is by the user.
+ */
 exports.deleteImage = (req, res, next) => {
     const imageId = req.params.imageId;
-    Image.findByPk(imageId)
+    Image.findOne({
+        where: {
+            id: imageId,
+            userId: req.user.id
+        }
+    })
         .then(image => {
             if (!image) {
                 const error = new Error('Could not find image.');
